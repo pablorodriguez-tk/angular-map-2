@@ -8,12 +8,12 @@ import { MapsService } from './maps.service';
   providedIn: 'root',
 })
 export class PlacesService {
-  public useLocation?: [number, number];
+  public userLocation?: [number, number];
   public isLoadingPlaces: boolean = false;
   public places: Feature[] = [];
 
   get isUserLocationReady(): boolean {
-    return !!this.useLocation;
+    return !!this.userLocation;
   }
 
   constructor(
@@ -27,7 +27,7 @@ export class PlacesService {
     return new Promise((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(
         ({ coords }) => {
-          this.useLocation = [coords.longitude, coords.latitude];
+          this.userLocation = [coords.longitude, coords.latitude];
           resolve([coords.longitude, coords.latitude]);
         },
         (error) => {
@@ -44,17 +44,20 @@ export class PlacesService {
       this.isLoadingPlaces = false;
       return;
     }
-    if (!this.useLocation) throw new Error('No hay useLocation');
+    if (!this.userLocation) throw new Error('No hay useLocation');
 
     this.isLoadingPlaces = true;
     this.placesApi
       .get<PlacesResponse>(`/${query}.json`, {
-        params: { proximity: this.useLocation?.join(',') },
+        params: { proximity: this.userLocation?.join(',') },
       })
       .subscribe((data) => {
         this.isLoadingPlaces = false;
         this.places = data.features;
-        this.mapsService.createMarkersFromPlaces(this.places);
+        this.mapsService.createMarkersFromPlaces(
+          this.places,
+          this.userLocation!
+        );
       });
   }
 }

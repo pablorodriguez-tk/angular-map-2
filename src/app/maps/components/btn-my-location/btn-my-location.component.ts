@@ -20,6 +20,6 @@ export class BtnMyLocationComponent {
     if (!this.mapService.isMapReady) {
       throw Error('No hay mapa disponible');
     }
-    this.mapService.flyTo(this.placesService.useLocation!);
+    this.mapService.flyTo(this.placesService.userLocation!);
   }
 }
