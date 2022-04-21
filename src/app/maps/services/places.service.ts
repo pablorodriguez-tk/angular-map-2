@@ -35,7 +35,11 @@ export class PlacesService {
     });
   }
   getPlacesByQuery(query: string = '') {
-    //TODO: evaluar cuando el query esta vacio
+    if (query.length === 0) {
+      this.places = [];
+      this.isLoadingPlaces = false;
+      return;
+    }
     if (!this.useLocation) throw new Error('No hay useLocation');
 
     this.isLoadingPlaces = true;
