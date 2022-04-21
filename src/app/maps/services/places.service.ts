@@ -1,20 +1,24 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { PlacesResponse, Feature } from '../interfaces/places';
+import { PlacesApiClient } from '../api';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PlacesService {
   public useLocation?: [number, number];
+  public isLoadingPlaces: boolean = false;
+  public places: Feature[] = [];
 
   get isUserLocationReady(): boolean {
     return !!this.useLocation;
   }
 
-  constructor() {
+  constructor(private placesApi: PlacesApiClient) {
     this.getUserLocation();
   }
 
-  //get current position
   public getUserLocation(): Promise<[number, number]> {
     return new Promise((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(
@@ -29,5 +33,19 @@ export class PlacesService {
         }
       );
     });
+  }
+  getPlacesByQuery(query: string = '') {
+    //TODO: evaluar cuando el query esta vacio
+    if (!this.useLocation) throw new Error('No hay useLocation');
+
+    this.isLoadingPlaces = true;
+    this.placesApi
+      .get<PlacesResponse>(`/${query}.json`, {
+        params: { proximity: this.useLocation?.join(',') },
+      })
+      .subscribe((data) => {
+        this.isLoadingPlaces = false;
+        this.places = data.features;
+      });
   }
 }
